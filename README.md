@@ -40,11 +40,29 @@ From the `workshop-4/backend` folder:
 # fetch dependencies (if needed)
 go mod tidy
 
-# run the server
+# run the server (uses config.yaml by default)
 go run cmd/server/main.go
 ```
 
-The API will be available at `http://localhost:3000` (or the configured port).
+The API will be available at `http://localhost:3000` (or the configured port). You can override the configuration by editing `config.yaml` in the same folder.
+
+### Quick API examples
+
+Create a user:
+
+```bash
+curl -sS -X POST "http://localhost:3000/users" \
+  -H 'Content-Type: application/json' \
+  -d '{"member_code":"A100","name":"Alice","remaining_points":100}' | jq .
+```
+
+Create a transfer:
+
+```bash
+curl -sS -X POST "http://localhost:3000/transfers" \
+  -H 'Content-Type: application/json' \
+  -d '{"fromUserId":1,"toUserId":2,"amount":10}' | jq .
+```
 
 ## API Endpoints
 
@@ -106,10 +124,16 @@ See `database.md` for a Mermaid ER diagram that documents the relationships.
 
 ## Testing
 
-Unit tests live in `internal/handlers/handlers_test.go` and use Gin's test router and an in-memory SQLite database. Run tests with:
+Unit tests live in `internal/handlers/handlers_test.go` and use Gin's test router and an in-memory SQLite database. Run unit tests with:
 
 ```bash
 go test ./... -v
+```
+
+For end-to-end manual verification there is a helper script `test_api.sh` that exercises the main API flows (create user, transfer, check balances). Start the server first, then run:
+
+```bash
+./test_api.sh
 ```
 
 Notes about tests:

@@ -5,48 +5,47 @@ from the backend code in `internal/models`.
 
 ```mermaid
 erDiagram
-    USERS {
-        uint ID PK "autoIncrement"
-        string MemberCode "unique, not null"
-        string MembershipLevel
-        string Name
-        string Surname
-        string Phone
-        string Email
-        string RegistrationDate
-        int RemainingPoints
+    users {
+        uint id PK "autoIncrement"
+        string member_code "unique, not null"
+        string membership_level
+        string name
+        string surname
+        string phone
+        string email
+        string registration_date
+        int remaining_points
     }
 
-    TRANSFERS {
-        uint ID PK "autoIncrement"
-        uint FromUserID FK "not null"
-        uint ToUserID FK "not null"
-        int Amount "not null"
-        string Status "not null"
-        string Note
-        string IdempotencyKey "unique, not null"
-        datetime CreatedAt
-        datetime UpdatedAt
-        datetime CompletedAt
-        string FailReason
+    transfers {
+        uint id PK "autoIncrement"
+        uint from_user_id FK "not null"
+        uint to_user_id FK "not null"
+        int amount "not null"
+        string status "not null"
+        string note
+        string idempotency_key "unique, not null"
+        datetime created_at
+        datetime updated_at
+        datetime completed_at
+        string fail_reason
     }
 
-    POINT_LEDGERS {
-        uint ID PK "autoIncrement"
-        uint UserID FK "not null"
-        int Change "not null"
-        int BalanceAfter "not null"
-        string EventType "not null"
-        uint TransferID FK
-        string Reference
-        string Metadata
-        datetime CreatedAt
+    point_ledgers {
+        uint id PK "autoIncrement"
+        uint user_id FK "not null"
+        int change "not null"
+        int balance_after "not null"
+        string event_type "not null"
+        uint transfer_id FK
+        string reference
+        string metadata
+        datetime created_at
     }
 
-    USERS ||--o{ TRANSFERS : "from (FromUserID)"
-    USERS ||--o{ TRANSFERS : "to (ToUserID)"
-    USERS ||--o{ POINT_LEDGERS : "has"
-    TRANSFERS ||--o{ POINT_LEDGERS : "may_generate (TransferID)"
+    users ||--o{ transfers : "from_user / to_user"
+    users ||--o{ point_ledgers : "has"
+    transfers ||--o{ point_ledgers : "creates"
 
     %% Notes:
     %% - Field types are approximated from Go types in `internal/models/models.go`.

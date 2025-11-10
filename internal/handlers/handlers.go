@@ -15,6 +15,8 @@ import (
 	"gorm.io/gorm"
 )
 
+// RegisterRoutes registers all HTTP routes for the service onto the provided
+// Gin engine.
 func RegisterRoutes(r *gin.Engine) {
 	r.GET("/users", getUsers)
 	r.GET("/users/:id", getUser)
@@ -111,6 +113,8 @@ type transferCreateReq struct {
 	Amount     int    `json:"amount" binding:"required,gt=0"`
 	Note       string `json:"note"`
 }
+
+// transferCreateReq is the JSON payload accepted by POST /transfers.
 
 func createTransfer(c *gin.Context) {
 	var req transferCreateReq

@@ -1,19 +1,29 @@
 #!/usr/bin/env zsh
 
+#!/usr/bin/env zsh
+
 # Robust API test script for the Gin backend
 BASE_URL="http://localhost:3000"
 
 echo "Running API tests against $BASE_URL"
 
-# Fail on unset variables, but don't exit on failing commands; we'll check return codes.
+# Preflight: ensure required commands are available
+for cmd in curl jq mktemp; do
+  if ! command -v $cmd >/dev/null 2>&1; then
+    echo "required command '$cmd' not found in PATH" >&2
+    exit 2
+  fi
+done
+
+# Fail on unset variables and treat pipeline failures properly
 set -uo pipefail
 
 tmpfile=$(mktemp)
 cleanup() { rm -f "$tmpfile" }
 trap cleanup EXIT
 
-echo "1) GET /users (expect empty array or list)"
-code=$(curl -sS -o "$tmpfile" -w "%{http_code}" ${BASE_URL}/users || true)
+echo "\n1) GET /users (expect empty array or list)"
+code=$(curl -sS -o "$tmpfile" -w "%{http_code}" "${BASE_URL}/users" || true)
 echo "Body:"; cat "$tmpfile"; echo "HTTP $code"
 
 echo "\n2) POST /users (create user)"
@@ -136,8 +146,8 @@ AMOUNT=30
 echo "Perform transfer $AMOUNT from A($UA_ID) -> B($UB_ID)"
 payload=$(cat <<JSON
 {
-  "fromUserId": $UA_ID,
-  "toUserId": $UB_ID,
+  "from_user_id": $UA_ID,
+  "to_user_id": $UB_ID,
   "amount": $AMOUNT,
   "note": "test transfer"
 }
@@ -150,8 +160,8 @@ if [[ "$code" -ne 201 && "$code" -ne 200 ]]; then
   exit 1
 fi
 
-IDEM=$(jq -r '.transfer.idemKey // .transfer.idempotency_key // .transfer.id' "$tmpfile")
-TID=$(jq -r '.transfer.transferId // .transfer.transfer_id // .transfer.transferId' "$tmpfile")
+IDEM=$(jq -r '.transfer.idempotency_key // .transfer.idemKey // .transfer.id' "$tmpfile")
+TID=$(jq -r '.transfer.id // .transfer.transfer_id // .transfer.transferId' "$tmpfile")
 echo "Created transfer idemKey=$IDEM transferId=$TID"
 
 echo "Verifying balances"
